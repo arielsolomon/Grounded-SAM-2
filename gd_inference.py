@@ -16,8 +16,8 @@ torch.cuda.empty_cache()
 """
 Hyper parameters
 """
-TEXT_PROMPT = "car. building. road."
-IMG_PATH = "/work/data/china_env_dataset/mixed_images/images/57_208.bmp"
+TEXT_PROMPT = "car. building."
+IMG_PATH = "/work/data/china_env_dataset/mixed_images/images/2_036.bmp"
 SAM2_CHECKPOINT = "checkpoints/sam2.1_hiera_large.pt"
 SAM2_MODEL_CONFIG = "configs/sam2.1/sam2.1_hiera_l.yaml"
 GROUNDING_DINO_CONFIG = "grounding_dino/groundingdino/config/GroundingDINO_SwinT_OGC.py"
