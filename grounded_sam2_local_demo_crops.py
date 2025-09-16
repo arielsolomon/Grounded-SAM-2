@@ -25,7 +25,7 @@ SAM2_CHECKPOINT = "./checkpoints/sam2.1_hiera_large.pt"
 SAM2_MODEL_CONFIG = "configs/sam2.1/sam2.1_hiera_l.yaml"
 GROUNDING_DINO_CONFIG = "grounding_dino/groundingdino/config/GroundingDINO_SwinT_OGC.py"
 GROUNDING_DINO_CHECKPOINT = "gdino_checkpoints/groundingdino_swint_ogc.pth"
-BOX_THRESHOLD = 0.3
+BOX_THRESHOLD = 0.25
 TEXT_THRESHOLD = 0.25
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 OUTPUT_DIR = Path("outputs")
@@ -34,9 +34,15 @@ DUMP_JSON_RESULTS = True
 # Tiling parameters
 CROP_SIZE = 150  # Size of each crop (single dimension - creates 4000x4000 crops)
 OVERLAP = 15     # Overlap between crops to avoid missing objects at edges
+SAVE_CROPS = True # Set to False if you don't want to save crop images
 
 # create output directory
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+# create crops subdirectory if saving crops
+CROPS_DIR = OUTPUT_DIR / "crops"
+if SAVE_CROPS:
+    CROPS_DIR.mkdir(parents=True, exist_ok=True)
 
 # build SAM2 image predictor
 sam2_checkpoint = SAM2_CHECKPOINT
@@ -175,6 +181,12 @@ for crop_idx, (x1, y1, x2, y2) in tqdm(enumerate(crops), total=len(crops), desc=
     temp_crop_path = os.path.join(temp_dir, f"crop_{crop_idx}.jpg")
     cv2.imwrite(temp_crop_path, crop_image)
     
+    # Save crop to crops directory if enabled
+    if SAVE_CROPS:
+        crop_filename = f"crop_{crop_idx:03d}_x{x1}-{x2}_y{y1}-{y2}.jpg"
+        crop_save_path = CROPS_DIR / crop_filename
+        cv2.imwrite(str(crop_save_path), crop_image)
+    
     try:
         # Load crop using grounding_dino's load_image function
         crop_image_source, crop_image_pil = load_image(temp_crop_path)
@@ -248,7 +260,7 @@ for crop_idx, (x1, y1, x2, y2) in tqdm(enumerate(crops), total=len(crops), desc=
         os.remove(temp_crop_path)
     
     except Exception as e:
-        print(f"Error processing crop {crop_idx}: {e}")
+        tqdm.write(f"Error processing crop {crop_idx}: {e}")
         # Clean up temporary crop file even on error
         if os.path.exists(temp_crop_path):
             os.remove(temp_crop_path)
@@ -343,5 +355,7 @@ print(f"\nProcessing complete!")
 print(f"- Found {len(filtered_detections)} objects total")
 print(f"- YOLO labels saved to: {IMG_NAME}.txt")
 print(f"- Annotated image saved to: {IMG_NAME}_tiled_detections.jpg")
+if SAVE_CROPS:
+    print(f"- {len(crops)} crop images saved to: outputs/crops/")
 if DUMP_JSON_RESULTS:
     print(f"- JSON results saved to: {IMG_NAME}_tiled_results.json")
