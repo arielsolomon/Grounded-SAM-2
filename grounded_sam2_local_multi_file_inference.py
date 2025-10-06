@@ -16,7 +16,8 @@ from tqdm import tqdm
 """
 Hyper parameters
 """
-TEXT_PROMPT = "car. "
+EXP_NAME = "car_person_B015_T025"
+TEXT_PROMPT = "car. person."
 IMG_DIR = "datasets/chin_env_data_for_stats/images/"  # directory containing multiple images
 SAM2_CHECKPOINT = "./checkpoints/sam2.1_hiera_large.pt"
 SAM2_MODEL_CONFIG = "configs/sam2.1/sam2.1_hiera_l.yaml"
@@ -25,13 +26,18 @@ GROUNDING_DINO_CHECKPOINT = "gdino_checkpoints/groundingdino_swint_ogc.pth"
 BOX_THRESHOLD = 0.15
 TEXT_THRESHOLD = 0.25
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-OUTPUT_DIR = Path("img_for_stats")
+OUTPUT_DIR = Path("img_for_stats/"+EXP_NAME)
+images_dir = OUTPUT_DIR / "images"
+labels_dir = OUTPUT_DIR / "labels"
+
+
 DUMP_JSON_RESULTS = True
 
 # ----------------------------------------
 # Create output directory
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
+images_dir.mkdir(parents=True, exist_ok=True)
+labels_dir.mkdir(parents=True, exist_ok=True)
 # Build SAM2 image predictor
 sam2_model = build_sam2(SAM2_MODEL_CONFIG, SAM2_CHECKPOINT, device=DEVICE)
 sam2_predictor = SAM2ImagePredictor(sam2_model)
